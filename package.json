@@ -3,7 +3,7 @@
   "displayName": "My",
   "publisher": "my0647",
   "description": "n",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "engines": {
     "vscode": "^1.66.0"
   },
@@ -11,6 +11,7 @@
     "Other"
   ],
   "activationEvents": [
+    "onCommand:my.crudPacklistInfinityscroll",
     "onCommand:my.crudPack",
     "onCommand:my.cssadd",
     "onCommand:my.particalapiadding",
@@ -20,9 +21,14 @@
   "contributes": {
     "commands": [
       {
+        "command": "my.crudPacklistInfinityscroll",
+        "title": "MY-CRUD-LIST-INFINITITYSCROLL"
+      },
+      {
         "command": "my.crudPack",
         "title": "MY-CRUD"
       },
+     
       {
         "command": "my.cssadd",
         "title": "MY-CSS-ADD"

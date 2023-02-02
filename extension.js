@@ -8,9 +8,9 @@ const vscode = require("vscode");
  * @param {vscode.ExtensionContext} context
  */
 async function activate(context) {
-  const commds = ["AUTO", "CSS_ADD", "API_PARTIAL", "CLEAR"];
+  const commds = ["MY-CRUD-LIST-INFINITITYSCROLL", "CLEAR","AUTO", "CSS_ADD", "API_PARTIAL",];
   let sectionName;
-  console.log(">>comme", context.extension.extensionKind);
+  console.log(">>comme",context.extension.extensionKind);
   if (commds[context.extension.extensionKind] != "CSS_ADD") {
     if (commds[context.extension.extensionKind] == "CLEAR") {
       sectionName = "";
@@ -370,6 +370,185 @@ async function activate(context) {
     }
   );
 
+  let disposableinfinityScoll = vscode.commands.registerCommand(
+    "my.crudPacklistInfinityscroll",
+    async function () {
+      const params = [
+        { label: "action", details: "Action Folder" },
+        { label: "Reducers", details: "Reducers Folder" },
+        { label: "Screen", details: "screen Folder" },
+        { label: "Component", details: "component Folder" },
+      ];
+      if (sectionName == "") {
+        sectionName = await vscode.window.showInputBox();
+        if (sectionName == "") return null;
+      }
+
+      const rootProjectPath = vscode.workspace.rootPath;
+
+      // console.log('root',rootProjectPath)
+      const SECTION_NAME = sectionName;
+      let { document } = vscode.window.activeTextEditor;
+      let activeEditor = vscode.window.activeTextEditor;
+      let curSorLine = activeEditor.selection.active.line;
+      const activeLineText = document.lineAt(curSorLine);
+      // console.log('>>',curSorLine,activeEditor)
+      const currentFilePath = document.uri.path;
+      const activeFileCode = document.getText();
+      //   const activeFileLineCount = document.lineCount;
+      const currentActiveFileData = document.uri.scheme;
+
+      //react-page
+      const activeCodeArr = activeFileCode.split("\n");
+      activeCodeArr.splice(
+        curSorLine + 1,
+        0,
+        `
+      import { get${SECTION_NAME} } from "../../Redux/${SECTION_NAME}Dispatcher";
+      const dispatch${SECTION_NAME}= useDispatch([${SECTION_NAME}]);
+      const fetch${SECTION_NAME}Data = (page) => {
+        dispatch(get${SECTION_NAME}Data(page));
+      };
+      useEffect(() => {
+        fetch${SECTION_NAME}Data(0);
+      }, []);
+      const LoadMoreRandomData = () => {
+        if (dispatch${SECTION_NAME}.noData) fetch${SECTION_NAME}Data(dispatch${SECTION_NAME}.page + 1);
+      };
+      {
+        !dispatch${SECTION_NAME}?.init${SECTION_NAME} && dispatch${SECTION_NAME}?.${SECTION_NAME}Data.length > 0 && (
+          <View style={[{ height: 230 }, styles.bottomView]}>
+            <FlatList
+              horizontal
+              onScroll={onScroll}
+              data={dispatch${SECTION_NAME}?.${SECTION_NAME}Data}
+              onEndReachedThreshold={0.5}
+              onEndReached={LoadMoreRandomData}
+              renderItem={({ item }, data) => {
+                return (
+                  <ListItem
+                    title={
+                      item.serviceTypeDesc
+                        ? item.serviceTypeDesc
+                        : item.ticketTypeDesc
+                    }
+                    type={item.intxnType}
+                    status={item.currStatusDesc}
+                    ticketNo={item.intxnId}
+                    date={item.createdAt}
+                    address={getAddressFromResponse(item)}
+                  />
+                );
+              }}
+              showsHorizontalScrollIndicator={false}
+              ListFooterComponent={() => {
+                if (noData) {
+                  return null;
+                }
+                return (
+                  <View style={{ marginBottom: spacing.HEIGHT_30 }}>
+                    <ActivityIndicator size="large" />
+                  </View>
+                );
+              }}
+            />
+          </View>
+        );
+      }
+      {
+        dispatch${SECTION_NAME}?.init${SECTION_NAME}Background && <ActivityIndicator />;
+      }
+      
+      `
+      );
+      // console.log('>>',currentFilePath)
+      await vscode.workspace.fs.writeFile(
+        vscode.Uri.file(currentFilePath),
+        new TextEncoder().encode(activeCodeArr.join("\n"))
+      );
+      vscode.workspace
+        .openTextDocument(`${currentFilePath}`)
+        .then((doc) => vscode.window.showTextDocument(doc, { preview: false }));
+
+      await vscode.workspace.fs.writeFile(
+        vscode.Uri.file(
+          `${rootProjectPath}/src/Redux/${SECTION_NAME}Action.js`
+        ),
+        new TextEncoder().encode(actionTemplete({ SECTION_NAME }))
+      );
+      vscode.workspace
+        .openTextDocument(
+          `${rootProjectPath}/src/Redux/${SECTION_NAME}Action.js`
+        )
+        .then((doc) => vscode.window.showTextDocument(doc, { preview: false }));
+
+      await vscode.workspace.fs.writeFile(
+        vscode.Uri.file(
+          `${rootProjectPath}/src/Redux/${SECTION_NAME}Reducer.js`
+        ),
+        new TextEncoder().encode(reducerTempleteInfinity({ SECTION_NAME }))
+      );
+      vscode.workspace
+        .openTextDocument(
+          `${rootProjectPath}/src/Redux/${SECTION_NAME}Reducer.js`
+        )
+        .then((doc) => vscode.window.showTextDocument(doc, { preview: false }));
+
+      await vscode.workspace.fs.writeFile(
+        vscode.Uri.file(
+          `${rootProjectPath}/src/Redux/${SECTION_NAME}Dispatcher.js`
+        ),
+        new TextEncoder().encode(dispatchTempleteInfinityScroll({ SECTION_NAME }))
+      );
+      vscode.workspace
+        .openTextDocument(
+          `${rootProjectPath}/src/Redux/${SECTION_NAME}Dispatcher.js`
+        )
+        .then((doc) => vscode.window.showTextDocument(doc, { preview: false }));
+
+      const reduxTempBuffer = await vscode.workspace.fs.readFile(
+        vscode.Uri.file(`${rootProjectPath}/src/Redux/Reducers.js`)
+      );
+      let reduxTemp = reduxTempBuffer.toString();
+      reduxTemp = reduxTemp.replace(
+        "const appReducer = combineReducers({",
+        `import ${sectionName}Reducer from "./${sectionName}Reducer";
+
+        const appReducer = combineReducers({
+        ${SECTION_NAME.toLocaleLowerCase()}: ${SECTION_NAME}Reducer,`
+      );
+
+      await vscode.workspace.fs.writeFile(
+        vscode.Uri.file(`${rootProjectPath}/src/Redux/Reducers.js`),
+        new TextEncoder().encode(reduxTemp)
+      );
+      let doc = await vscode.workspace.openTextDocument(
+        `${rootProjectPath}/src/Redux/Reducers.js`
+      );
+      vscode.window.showTextDocument(doc, { preview: false });
+
+      const constTempBuffer = await vscode.workspace.fs.readFile(
+        vscode.Uri.file(`${rootProjectPath}/src/Utilities/API/ApiConstants.js`)
+      );
+      let constTemp = constTempBuffer.toString();
+      constTemp = constTemp.replace(
+        "export const endPoints = {",
+        `export const endPoints = {
+      ${SECTION_NAME.toUpperCase()}: 'api/bcae-tenant',`
+      );
+
+      await vscode.workspace.fs.writeFile(
+        vscode.Uri.file(`${rootProjectPath}/src/Utilities/API/ApiConstants.js`),
+        new TextEncoder().encode(constTemp)
+      );
+
+      // console.log('current file path',currentFilePath)
+      // console.log('file data',document.getWordRangeAtPosition())
+      // Display a message box to the user
+      // vscode.window.showInformationMessage('Hello World from My!'+typeOfFile.label);
+    }
+  );
+
   let clearSection = vscode.commands.registerCommand(
     "my.clearSection",
     async function () {
@@ -379,11 +558,13 @@ async function activate(context) {
       // console.log("clear section", sectionName);
     }
   );
+  
 
   context.subscriptions.push(css_adding);
   context.subscriptions.push(disposable);
   context.subscriptions.push(clearSection);
   context.subscriptions.push(partical_api_adding);
+  context.subscriptions.push(disposableinfinityScoll);
 }
 
 // this method is called when your extension is deactivated
@@ -457,6 +638,98 @@ const reducerTemplete = ({ SECTION_NAME }) => {
   export default ${SECTION_NAME}Reducer;`;
 };
 
+const reducerTempleteInfinity = ({ SECTION_NAME }) => {
+  const section_cap = SECTION_NAME.toUpperCase();
+  const section_low = SECTION_NAME.toLowerCase();
+
+  return `import { ${section_cap}_INIT, ${section_cap}_DATA, ${section_cap}_ERROR } from './${SECTION_NAME}Action'
+  import get from "lodash.get";
+  const ${section_low}InitialState = {
+      init${SECTION_NAME}: false,
+      is${SECTION_NAME}Error: false,
+      ${section_low}Data: {},
+      page: 0,
+      noData: false,
+  }
+  
+  const ${SECTION_NAME}Reducer = (state = ${section_low}InitialState, action) => {
+      switch (action.type) {
+          case ${section_cap}_INIT:
+              return {
+                  ...state,
+                  init${SECTION_NAME}: true,
+                  is${SECTION_NAME}Error: false,
+                  ${section_low}Data: {},
+                  noData: false,
+                  page: 0,
+              }
+  
+          case ${section_cap}_ERROR:
+              return {
+                  ...state,
+                  init${SECTION_NAME}: false,
+                  is${SECTION_NAME}Error: true,
+                  ${section_low}Data: action.data,
+              }
+  
+          case ${section_cap}_DATA:
+            const page = action.data.page;
+            const count = get(action, "data.result.length", 0);
+            const lenData = get(action, "data.result.length", 0);
+            if (lenData === 0)
+            return {
+              ...state,
+              noData: true,
+              init${SECTION_NAME}: false,
+              init${SECTION_NAME}Background: false,
+            };
+            return {
+              ...state,
+              page,
+              noData: false,
+              init${SECTION_NAME}: false,
+              is${SECTION_NAME}Error: false,
+              ${section_low}Data:
+                page === 0
+                  ? action.data.result
+                  : [...state.${section_low}Data, ...action.data.result],
+              init${SECTION_NAME}Background: false,
+            };
+          default:
+              return state;
+      }
+  }
+  export default ${SECTION_NAME}Reducer;`;
+};
+const dispatchTempleteInfinityScroll = ({ SECTION_NAME }) => {
+  const section_cap = SECTION_NAME.toUpperCase();
+  const section_low = SECTION_NAME.toLowerCase();
+
+  return `import { init${SECTION_NAME}Data, set${SECTION_NAME}Data, set${SECTION_NAME}Error } from './${SECTION_NAME}Action';
+  import { serverCall } from "../Utilities/API";
+  import { endPoints, requestMethod } from "../../src/Utilities/API/ApiConstants";
+  import get from "lodash.get";
+  const EMPTY_DATA = [
+  ]
+  const DATA = [
+    
+  ]
+  export function get${SECTION_NAME}Data(page = 0) {
+      return async (dispatch) => {
+        if (page === 0)  dispatch(init${SECTION_NAME}Data());
+      
+          let params = {
+            
+      };
+      let result = await serverCall(endPoints.${SECTION_NAME.toUpperCase()}?limit=3&page=3, requestMethod.POST, params)
+      if (result.success) {
+          dispatch(set${SECTION_NAME}Data({result: result?.data?.data, page: page}));
+        } else {
+           dispatch(set${SECTION_NAME}Error(result));
+        }
+      };
+  }`;
+};
 const dispatchTemplete = ({ SECTION_NAME }) => {
   const section_cap = SECTION_NAME.toUpperCase();
   const section_low = SECTION_NAME.toLowerCase();
