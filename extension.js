@@ -103,18 +103,21 @@ async function activate(context) {
       const activeFileCode = document.getText();
       //   const activeFileLineCount = document.lineCount;
       const currentActiveFileData = document.uri.scheme;
-      //reducers start
+      //fetch copy existing reducer data
       let reducerExisting = await getFileIntoStringData(
         `/src/Redux/${SECTION_NAME}Reducer.js`,
         rootProjectPath,
         "array"
       );
-
+      //add first line import to existing reducer file
       const importTempAdded = addImportToFile(
         reducerExisting,
-        `${actionName.toUpperCase()}_DATA,,${actionName.toUpperCase()}_ERROR`
+        `${actionName.toUpperCase()}_DATA,${actionName.toUpperCase()}_ERROR,
+        ${actionName.toUpperCase()}_LOADER`
       );
+      // add reducer initial contant data
       const addContantValue = addContantValues(actionName);
+      //ad reducer file function
       let ReducerData = parseApiReducerData({ SECTION_NAME: actionName });
 
       const appendIndex = importTempAdded.findIndex((value) =>
@@ -141,16 +144,17 @@ async function activate(context) {
       //reducer end
 
       //opening
-      //action start
+      //action take existing code
       let actionExisting = await getFileIntoStringData(
         `/src/Redux/${SECTION_NAME}Action.js`,
         rootProjectPath,
         "array"
       );
+      //import in action file
       const importTempAddedAction = parseApiActionImportDataData({
         SECTION_NAME: actionName,
       });
-
+      //action adding method
       let ActionData = parseApiActionData({ SECTION_NAME: actionName.toUpperCase() });
 
       actionExisting.splice(0, 0, importTempAddedAction.join("\n"));
@@ -176,6 +180,7 @@ async function activate(context) {
         rootProjectPath,
         "array"
       );
+      //dispatcher import that metion in action constant
       const importTempAddedDispatcher = addImportToFile(
         dispatcherExisting,
         parseApiDispatcherImporterData({ SECTION_NAME: actionName })
@@ -209,6 +214,7 @@ async function activate(context) {
         `
       import { ${actionName} } from "../../Redux/${SECTION_NAME}Dispatcher";
       const dispatch${SECTION_NAME} = useDispatch([${actionName}]);
+
       `
       );
       // console.log('>>',currentFilePath)
@@ -771,7 +777,7 @@ const getFileIntoStringData = async (uri, rootProjectPath, type) => {
 const parseApiDispatcherData = ({ SECTION_NAME }) => {
   const code = `   export const ${SECTION_NAME}Data = () => {
       return async (dispatch) => {
-          dispatch(init${SECTION_NAME}Data());
+          dispatch(set${SECTION_NAME}Loader());
           let params = {
             
           };
@@ -789,7 +795,8 @@ const parseApiDispatcherData = ({ SECTION_NAME }) => {
 };
 
 const parseApiDispatcherImporterData = ({ SECTION_NAME }) => {
-  const code = `set${SECTION_NAME}Data, set${SECTION_NAME}Error`;
+  const code = `set${SECTION_NAME}Data, set${SECTION_NAME}Error,
+  set${SECTION_NAME}Loader`;
   return code;
 };
 
@@ -798,6 +805,7 @@ const parseApiReducerData = ({ SECTION_NAME }) => {
   return {
       ...state,
       init${SECTION_NAME}: false,
+      ${SECTION_NAME.toLocaleLowerCase()}Loader : false,
       is${SECTION_NAME}Error: true,
       ${SECTION_NAME.toLocaleLowerCase()}Data: action.data,
   }
@@ -806,6 +814,7 @@ case ${SECTION_NAME.toUpperCase()}_DATA:
   return {
       ...state,
       init${SECTION_NAME}: false,
+      ${SECTION_NAME.toLocaleLowerCase()}Loader : false,
       is${SECTION_NAME}Error: false,
       ${SECTION_NAME.toLocaleLowerCase()}Data: action.data,
   }`;
@@ -819,6 +828,9 @@ const parseApiReducerImportData = ({ SECTION_NAME }) => {
 const parseApiActionData = ({ SECTION_NAME }) => {
   const code = ` export const set${SECTION_NAME}Data =(data) => {
     return { type: ${SECTION_NAME}_DATA, data }
+}
+export const set${SECTION_NAME}Loader =(data) => {
+  return { type: ${SECTION_NAME}_LOADER, data }
 }
 
 export const set${SECTION_NAME}_ERROR = (data) => {
@@ -834,7 +846,8 @@ const parseApiActionDataImport = ({ SECTION_NAME }) => {
 };
 const parseApiActionImportDataData = ({ SECTION_NAME }) => {
   const code = ` export const ${SECTION_NAME.toUpperCase()}_DATA = '${SECTION_NAME.toUpperCase()}_DATA';
-  export const ${SECTION_NAME.toUpperCase()}_ERROR = '${SECTION_NAME.toUpperCase()}_ERROR';`;
+  export const ${SECTION_NAME.toUpperCase()}_ERROR = '${SECTION_NAME.toUpperCase()}_ERROR';
+  export const ${SECTION_NAME.toUpperCase()}_LOADER = '${SECTION_NAME.toUpperCase()}_LOADER';`;
   return code.split("\n");
 };
 
@@ -843,7 +856,7 @@ const findIndexToAppend = (temp, search) => {
   console.log(">>", t != -1, t);
 };
 const addContantValues = (actionName) => {
-  const temp = ` is${actionName}Error: false,${actionName}Data: {},`;
+  const temp = ` is${actionName}Error: false,${actionName}Data: {},${actionNameLoader}`;
   return temp;
 };
 const addImportToFile = (temp, actionsTxt) => {
