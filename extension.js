@@ -769,7 +769,7 @@ const getFileIntoStringData = async (uri, rootProjectPath, type) => {
 };
 
 const parseApiDispatcherData = ({ SECTION_NAME }) => {
-  const code = `   export const ${SECTION_NAME}Data() => {
+  const code = `   export const ${SECTION_NAME}Data = () => {
       return async (dispatch) => {
           dispatch(init${SECTION_NAME}Data());
           let params = {
@@ -777,9 +777,11 @@ const parseApiDispatcherData = ({ SECTION_NAME }) => {
           };
           let result = await serverCall(endPoints.${SECTION_NAME.toUpperCase()}, requestMethod.POST, params)
           if (result.success) {
-              dispatch(set${SECTION_NAME}Data(DATA));
+              console.log("success ${SECTION_NAME}",result)
+              dispatch(set${SECTION_NAME}Data(result?.data));
           } else {
-              dispatch(set${SECTION_NAME}Error(DATA));
+              console.log("error ${SECTION_NAME}",result)
+              dispatch(set${SECTION_NAME}Error(result));
           }
       };
   }`;

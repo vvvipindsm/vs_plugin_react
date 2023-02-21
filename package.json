@@ -3,7 +3,7 @@
   "displayName": "My",
   "publisher": "my0647",
   "description": "n",
-  "version": "0.0.12",
+  "version": "0.0.14",
   "engines": {
     "vscode": "^1.66.0"
   },
