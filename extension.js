@@ -207,8 +207,8 @@ async function activate(context) {
         curSorLine + 1,
         0,
         `
-      import { fetch${actionName} } from "../../Redux/${SECTION_NAME}Dispatcher";
-      const dispatch${SECTION_NAME} = useDispatch([fetch${actionName}]);
+      import { ${actionName} } from "../../Redux/${SECTION_NAME}Dispatcher";
+      const dispatch${SECTION_NAME} = useDispatch([${actionName}]);
       `
       );
       // console.log('>>',currentFilePath)
