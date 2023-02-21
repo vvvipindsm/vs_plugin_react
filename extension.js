@@ -151,7 +151,7 @@ async function activate(context) {
         SECTION_NAME: actionName,
       });
 
-      let ActionData = parseApiActionData({ SECTION_NAME: actionName });
+      let ActionData = parseApiActionData({ SECTION_NAME: actionName.toUpperCase() });
 
       actionExisting.splice(0, 0, importTempAddedAction.join("\n"));
       actionExisting.splice(-1, 0, ActionData.join("\n"));
@@ -207,8 +207,8 @@ async function activate(context) {
         curSorLine + 1,
         0,
         `
-      import { ${actionName} } from "../../Redux/${SECTION_NAME}Dispatcher";
-      const dispatch${SECTION_NAME}= useDispatch([fetch${actionName}]);
+      import { fetch${actionName} } from "../../Redux/${SECTION_NAME}Dispatcher";
+      const dispatch${SECTION_NAME} = useDispatch([fetch${actionName}]);
       `
       );
       // console.log('>>',currentFilePath)
@@ -279,7 +279,8 @@ async function activate(context) {
         0,
         `
       import { get${SECTION_NAME} } from "../../Redux/${SECTION_NAME}Dispatcher";
-      const dispatch${SECTION_NAME}= useDispatch([${SECTION_NAME}]);
+      const dispatch${SECTION_NAME}= useDispatch([get${SECTION_NAME}]);
+      let SECTION_NAME = useSelector((state) => state.SECTION_NAME);
       `
       );
       // console.log('>>',currentFilePath)
@@ -714,7 +715,7 @@ const dispatchTempleteInfinityScroll = ({ SECTION_NAME }) => {
   const DATA = [
     
   ]
-  export function get${SECTION_NAME}Data(page = 0) {
+  export const get${SECTION_NAME}Data = (page = 0) => {
       return async (dispatch) => {
         if (page === 0)  dispatch(init${SECTION_NAME}Data());
       
@@ -742,7 +743,7 @@ const dispatchTemplete = ({ SECTION_NAME }) => {
   const DATA = [
     
   ]
-  export function get${SECTION_NAME}Data(navigation,phoneNumber) {
+  export const get${SECTION_NAME}Data = () => {
       return async (dispatch) => {
           dispatch(init${SECTION_NAME}Data());
           let params = {
@@ -768,7 +769,7 @@ const getFileIntoStringData = async (uri, rootProjectPath, type) => {
 };
 
 const parseApiDispatcherData = ({ SECTION_NAME }) => {
-  const code = `   export function ${SECTION_NAME}Data(navigation) {
+  const code = `   export const ${SECTION_NAME}Data() => {
       return async (dispatch) => {
           dispatch(init${SECTION_NAME}Data());
           let params = {
@@ -814,11 +815,11 @@ const parseApiReducerImportData = ({ SECTION_NAME }) => {
   return code;
 };
 const parseApiActionData = ({ SECTION_NAME }) => {
-  const code = ` export function set${SECTION_NAME}Data(data) {
+  const code = ` export const set${SECTION_NAME}Data =(data) => {
     return { type: ${SECTION_NAME}_DATA, data }
 }
 
-export function set${SECTION_NAME}_ERROR(data) {
+export const set${SECTION_NAME}_ERROR = (data) => {
     return { type: ${SECTION_NAME}_ERROR, data }
 }`;
   return code.split("\n");
