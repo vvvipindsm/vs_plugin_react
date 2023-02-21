@@ -112,7 +112,7 @@ async function activate(context) {
 
       const importTempAdded = addImportToFile(
         reducerExisting,
-        `${actionName.toUpperCase()},`
+        `${actionName.toUpperCase()}_DATA,,${actionName.toUpperCase()}_ERROR`
       );
       const addContantValue = addContantValues(actionName);
       let ReducerData = parseApiReducerData({ SECTION_NAME: actionName });
