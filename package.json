@@ -15,6 +15,7 @@
     "onCommand:my.crudPack",
     "onCommand:my.cssadd",
     "onCommand:my.particalapiadding",
+    "onCommand:my.formCrud",
     "onCommand:my.clearSection"
   ],
   "main": "./extension.js",
@@ -36,6 +37,10 @@
       {
         "command": "my.particalapiadding",
         "title": "MY-New-API-Partial"
+      },
+      {
+        "command": "my.formCrud",
+        "title": "MY-FORM_CRUD"
       },
       {
         "command": "my.clearSection",
