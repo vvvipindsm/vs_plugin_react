@@ -590,7 +590,7 @@ async function activate(context) {
         0,
        formRenderView({SECTION_NAME,formFields})
       );
-      return ''
+
       await vscode.workspace.fs.writeFile(
         vscode.Uri.file(currentFilePath),
         new TextEncoder().encode(activeCodeArr.join("\n"))
