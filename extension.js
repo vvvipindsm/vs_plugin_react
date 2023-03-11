@@ -778,13 +778,13 @@ const actionTempleteFormCrud = ({ SECTION_NAME }) => {
     };
   }
   
-  export function enableLoaderAdd${SECTION_NAME}Add() {
+  export function enableLoaderAdd${SECTION_NAME}() {
     return async (dispatch) => {
       dispatch({ type:${SECTION_NAME.toUpperCase()}_ADD_LOADER_ENABLE });
     };
   }
   
-  export function enableLoaderEdit${SECTION_NAME}Add(data) {
+  export function enableLoaderEdit${SECTION_NAME}(data) {
     return async (dispatch) => {
       dispatch({ type:${SECTION_NAME.toUpperCase()}_EDIT_LOADER_ENABLE, data });
     };
@@ -850,7 +850,8 @@ const reducerTempleteForm = ({ SECTION_NAME,formFields=[] }) => {
     ${section_cap}_EDIT_LOADER_ENABLE,
     ${section_cap}_FORM_ERROR,
   } from "./${SECTION_NAME}Action";
-  
+  import { INPUT_TYPE } from '../Utilities/Contants/Constant'
+
   const ${SECTION_NAME}InitialState = {
     init${SECTION_NAME}: false,
     loaderAdd: false,
@@ -862,7 +863,9 @@ const reducerTempleteForm = ({ SECTION_NAME,formFields=[] }) => {
         return `${d} : {
           field : "${d}",
           required : true,
-          error : ""
+          error : "",
+          type : INPUT_TYPE.INPUTBOX,
+          value : ""
         }`
       }) }
       
@@ -1096,11 +1099,9 @@ const formRenderView = ({ SECTION_NAME,formFields }) => {
     set${SECTION_NAME}Reset,
   } from "../../Redux/${SECTION_NAME}Action";
   
-  
-  
-  const Edit${SECTION_NAME} = ({ navigation, props }) => {
+  import { INPUT_TYPE} from "../../Utilities/Constants/Constant"
     
-    const dispatch${SECTION_NAME} = useDispatch([set${SECTION_NAME}Reset,set${SECTION_NAME}Reset,fetch${SECTION_NAME}Action,update${SECTION_NAME}Action,add${SECTION_NAME}Action]);
+    const dispatch${SECTION_NAME} = useDispatch([set${SECTION_NAME}Reset,set${SECTION_NAME}FormField,fetch${SECTION_NAME}Action,update${SECTION_NAME}Action,add${SECTION_NAME}Action]);
   
     let ${section_low}Redux = useSelector((state) => state.${section_low});
   
@@ -1114,7 +1115,31 @@ const formRenderView = ({ SECTION_NAME,formFields }) => {
     useEffect(() => {
       dispatch${SECTION_NAME}(fetch${SECTION_NAME}Action());
     }, []);
-  
+    
+
+    const setFormData = (obj)=>{
+      dispatch${SECTION_NAME}(
+        set${SECTION_NAME}FormField(obj)
+      );
+    }
+
+     
+    let isButtonEnable = true;
+
+    Object.keys(${section_low}Redux.formData).map(it=>{
+      const item = ${section_low}Redux.formData[it];
+      if(item.type == INPUT_TYPE.DROPDOWN) {
+        if(item.value.code == "") {
+          isButtonEnable = false
+        }
+      }
+      if(item.type == INPUT_TYPE.INPUTBOX) {
+        if(item.value == "") {
+          isButtonEnable = false;
+        }
+      }
+    
+    })
 
          <View style={{ marginTop: spacing.HEIGHT_30 }}>
          ${formFields.map((d)=>{
@@ -1153,9 +1178,15 @@ const formRenderView = ({ SECTION_NAME,formFields }) => {
         <View style={{ marginTop: spacing.HEIGHT_24 }}>
          <CustomBottom
            label="REGISTER"
-           // isDisabled={isButtomDiable}
+           isDisabled={!isButtonEnable}
            onPress={async () => {
-             await dispatch${SECTION_NAME}(add${SECTION_NAME}Action(${section_low}Redux.formData))
+             const {status,response} = await dispatch${SECTION_NAME}(add${SECTION_NAME}Action(${section_low}Redux.formData))
+             if(status) {
+              dispatch${SECTION_NAME}(set${SECTION_NAME}Reset())
+             }
+             else {
+              console.log("error")
+             }
            }}
            loading={${section_low}Redux.loaderAdd}
            mode="contained"
@@ -1185,7 +1216,7 @@ const dispatchTempleteForm = ({ SECTION_NAME,formFields }) => {
   import Toast from "react-native-toast-message";
   import { strings } from "../Utilities/Language";
   
-  export function fetchSaved${SECTION_NAME}Data() {
+  export function fetch${SECTION_NAME}Data() {
     return async (dispatch) => {
       dispatch(init${SECTION_NAME}());
       
@@ -1204,8 +1235,6 @@ const dispatchTempleteForm = ({ SECTION_NAME,formFields }) => {
   
   export function update${SECTION_NAME}Action(obj) {
     return async (dispatch) => {
-      const validation = await validateFormData(obj, dispatch);
-      if (!validation) return null;
       dispatch(enableLoaderEdit${SECTION_NAME}(false));
     
       let result = await serverCall(
@@ -1259,15 +1288,7 @@ const dispatchTempleteForm = ({ SECTION_NAME,formFields }) => {
         return false;
       }
     };
-  }
-  
-  const validateFormData = async (formData, dispatch) => {
-    let status = false;
-    ${formFields.map((d)=>{
-      return `//df`
-    }) }
-    return status;
-  };`;
+  }`;
 };
 
 const getFileIntoStringData = async (uri, rootProjectPath, type) => {
