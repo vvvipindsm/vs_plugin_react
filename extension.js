@@ -1382,7 +1382,7 @@ const findIndexToAppend = (temp, search) => {
   console.log(">>", t != -1, t);
 };
 const addContantValues = (actionName) => {
-  const temp = ` is${actionName}Error: false,${actionName}Data: {},${actionNameLoader}`;
+  const temp = ` is${actionName}Error: false,${actionName}Data: {},${actionName}Loader`;
   return temp;
 };
 const addImportToFile = (temp, actionsTxt) => {
