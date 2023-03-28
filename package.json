@@ -3,7 +3,7 @@
   "displayName": "My",
   "publisher": "my0647",
   "description": "n",
-  "version": "0.0.19",
+  "version": "0.0.20",
   "engines": {
     "vscode": "^1.66.0"
   },
@@ -16,6 +16,7 @@
     "onCommand:my.cssadd",
     "onCommand:my.particalapiadding",
     "onCommand:my.formCrud",
+    "onCommand:my.lang",
     "onCommand:my.clearSection"
   ],
   "main": "./extension.js",
@@ -41,6 +42,10 @@
       {
         "command": "my.formCrud",
         "title": "MY-FORM_CRUD"
+      },
+      {
+        "command": "my.lang",
+        "title": "MY-LANG"
       },
       {
         "command": "my.clearSection",

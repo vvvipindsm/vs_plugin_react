@@ -8,7 +8,7 @@ const vscode = require("vscode");
  * @param {vscode.ExtensionContext} context
  */
 async function activate(context) {
-  const commds = ["MY-CRUD-LIST-INFINITITYSCROLL","CLEAR","MY-CRUD", "CSS_ADD", "API_PARTIAL", "FORM_CRUD"];
+  const commds = ["MY-CRUD-LIST-INFINITITYSCROLL","CLEAR","MY-CRUD", "CSS_ADD", "API_PARTIAL", "FORM_CRUD","MY-LANG"];
   let sectionName;
   console.log("active extension",context.extension.extensionKind);
   // if (commds[context.extension.extensionKind] != "CSS_ADD") {
@@ -77,6 +77,52 @@ async function activate(context) {
       vscode.workspace
         .openTextDocument(currentFilePath)
         .then((doc) => vscode.window.showTextDocument(doc, { preview: true }));
+    }
+  );
+  let lang_adding = vscode.commands.registerCommand(
+    "my.lang",
+    async function () {
+      if (sectionName == "") {
+        sectionName = await vscode.window.showInputBox();
+        if (sectionName == "") return null;
+      }
+      const data = sectionName.split(",");
+      const langProps = data[0]
+      const langValue = data[1]
+      const rootProjectPath = vscode.workspace.rootPath;
+      // let { document } = vscode.window.activeTextEditor;
+      // let activeEditor = vscode.window.activeTextEditor;
+      // let curSorLine = activeEditor.selection.active.line;
+      console.log(langProps,langValue);
+
+   
+
+      const langCodeBuffer = await vscode.workspace.fs.readFile(
+        vscode.Uri.file(`${rootProjectPath}/src/Utilities/Language/index.js`)
+      );
+      let langCodeBufferString = langCodeBuffer.toString();
+      langCodeBufferString = langCodeBufferString.replace(
+         `"en-US": {`,
+        `"en-US": {
+        ${langProps}: "${langValue}",`
+      );
+      langCodeBufferString = langCodeBufferString.replace(
+        `en: {`,
+       `en: {
+        ${langProps}: "${langValue}",`
+     );
+
+     langCodeBufferString = langCodeBufferString.replace(
+        `ml: {`,
+       `ml: {
+        ${langProps}: "${langValue}",`
+     );
+   
+
+   await vscode.workspace.fs.writeFile(
+    vscode.Uri.file(`${rootProjectPath}/src/Utilities/Language/index.js`),
+    new TextEncoder().encode(langCodeBufferString)
+  );
     }
   );
 
@@ -701,6 +747,7 @@ async function activate(context) {
   context.subscriptions.push(disposableinfinityScoll);
   context.subscriptions.push(disposable);
   context.subscriptions.push(css_adding);
+  context.subscriptions.push(lang_adding);
   context.subscriptions.push(partical_api_adding);
   context.subscriptions.push(disposableformCrud);
   context.subscriptions.push(clearSection);
