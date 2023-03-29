@@ -13,3 +13,8 @@
 4. CSS : not completed
 
 more info telgrm : @v0647
+
+
+
+`//add en-US`,
+     `//add en`,

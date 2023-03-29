@@ -102,21 +102,17 @@ async function activate(context) {
       );
       let langCodeBufferString = langCodeBuffer.toString();
       langCodeBufferString = langCodeBufferString.replace(
-         `"en-US": {`,
-        `"en-US": {
-        ${langProps}: "${langValue}",`
+         `//add en-US`,
+         `${langProps}: "${langValue}",
+         //add en-US`
       );
       langCodeBufferString = langCodeBufferString.replace(
-        `en: {`,
-       `en: {
-        ${langProps}: "${langValue}",`
+     `//add en`,
+     `${langProps}: "${langValue}",
+     //add en`
      );
 
-     langCodeBufferString = langCodeBufferString.replace(
-        `ml: {`,
-       `ml: {
-        ${langProps}: "${langValue}",`
-     );
+   
    
 
    await vscode.workspace.fs.writeFile(
