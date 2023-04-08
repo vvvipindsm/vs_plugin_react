@@ -82,10 +82,10 @@ async function activate(context) {
   let lang_adding = vscode.commands.registerCommand(
     "my.lang",
     async function () {
-      if (sectionName == "") {
-        sectionName = await vscode.window.showInputBox();
-        if (sectionName == "") return null;
-      }
+
+      sectionName = await vscode.window.showInputBox();
+      if (sectionName == "") return null;
+
       const data = sectionName.split(",");
       const langProps = data[0]
       const langValue = data[1]
@@ -106,11 +106,11 @@ async function activate(context) {
          `${langProps}: "${langValue}",
          //add en-US`
       );
-      langCodeBufferString = langCodeBufferString.replace(
-     `//add en`,
-     `${langProps}: "${langValue}",
-     //add en`
-     );
+    //   langCodeBufferString = langCodeBufferString.replace(
+    //  `//add en`,
+    //  `${langProps}: "${langValue}",
+    //  //add en`
+    //  );
 
    
    
@@ -295,16 +295,11 @@ async function activate(context) {
   let disposable = vscode.commands.registerCommand(
     "my.crudPack",
     async function () {
-      const params = [
-        { label: "action", details: "Action Folder" },
-        { label: "Reducers", details: "Reducers Folder" },
-        { label: "Screen", details: "screen Folder" },
-        { label: "Component", details: "component Folder" },
-      ];
-      if (sectionName == "") {
+   
+     // if (sectionName == "") {
         sectionName = await vscode.window.showInputBox();
         if (sectionName == "") return null;
-      }
+      //}
 
       const rootProjectPath = vscode.workspace.rootPath;
 
@@ -428,10 +423,10 @@ async function activate(context) {
         { label: "Screen", details: "screen Folder" },
         { label: "Component", details: "component Folder" },
       ];
-      if (sectionName == "") {
+      //if (sectionName == "") {
         sectionName = await vscode.window.showInputBox();
         if (sectionName == "") return null;
-      }
+      //}
 
       const rootProjectPath = vscode.workspace.rootPath;
 
@@ -602,10 +597,10 @@ async function activate(context) {
     "my.formCrud",
     async function () {
       let formData = ""
-      if (sectionName == "") {
+      //if (sectionName == "") {
         sectionName = await vscode.window.showInputBox();
         if (sectionName == "") return null;
-      }
+      //}
       formData = await vscode.window.showInputBox();
       if (formData == "") return "";
       const formFields = formData.split(",");
