@@ -954,8 +954,14 @@ const reducerTempleteForm = ({ SECTION_NAME,formFields=[] }) => {
           ${SECTION_NAME}Data: action.data,
         };
       case ${section_cap}_RESET:
-        state = ${SECTION_NAME}InitialState;
-        return state;
+        let formData =  ${SECTION_NAME}InitialState;
+        Object.keys(formData).map(it =>{
+          formData[it].value = ""
+          formData[it].error = ""
+        })
+
+       
+        return {...state,formData};
       case ${section_cap}_SET_FORM:
         const {
           clearError = true,
