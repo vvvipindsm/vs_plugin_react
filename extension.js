@@ -901,6 +901,7 @@ const reducerTempleteForm = ({ SECTION_NAME,formFields=[] }) => {
         return `${d} : {
           field : "${d}",
           required : true,
+          isFinal : true,
           error : "",
           type : INPUT_TYPE.INPUTBOX,
           value : ""
@@ -991,7 +992,7 @@ const reducerTempleteForm = ({ SECTION_NAME,formFields=[] }) => {
         };
       case ${section_cap}_FORM_ERROR:
         let formDataTemp = state.formData;
-        formDataTemp[data.field].error = data.errorMsg;
+        formDataTemp[action.data.field].error = action.data.errorMsg;
         return {
           ...state,
           formData: tempFormData,
@@ -1141,7 +1142,7 @@ const formRenderView = ({ SECTION_NAME,formFields }) => {
     
     const dispatch${SECTION_NAME} = useDispatch([set${SECTION_NAME}Reset,set${SECTION_NAME}FormField,fetch${SECTION_NAME}Action,update${SECTION_NAME}Action,add${SECTION_NAME}Action]);
   
-    let ${section_low}Redux = useSelector((state) => state.${section_low});
+    const ${section_low}Redux = useSelector((state) => state.${section_low});
   
     const {
       ${formFields.map((d)=>{
@@ -1149,15 +1150,15 @@ const formRenderView = ({ SECTION_NAME,formFields }) => {
       })}
       
     } = ${section_low}.formData;
-  
+   
     useEffect(() => {
       dispatch${SECTION_NAME}(fetch${SECTION_NAME}Action());
     }, []);
     
 
-    const setFormData = (obj)=>{
+    const setFormData = (field,value)=>{
       dispatch${SECTION_NAME}(
-        set${SECTION_NAME}FormField(obj)
+        set${SECTION_NAME}FormField({ field ,value,clearError : false})
       );
     }
 
@@ -1178,6 +1179,14 @@ const formRenderView = ({ SECTION_NAME,formFields }) => {
       }
     
     })
+    let finalParams = {}
+    Object.keys(${section_low}Redux.formData).map(it=>{
+      const item = ${section_low}Redux.formData[it];
+      if(item.isFinal) {
+        finalParams[it] = item.value
+      }
+    });
+
 
          <View style={{ marginTop: spacing.HEIGHT_30 }}>
          ${formFields.map((d)=>{
@@ -1186,24 +1195,16 @@ const formRenderView = ({ SECTION_NAME,formFields }) => {
           caption={strings.${d}}
           placeholder={strings.${d}}
           onChangeText={(text) =>{
-              set${SECTION_NAME}FormField({
-                field: "${d}",
-                value: text, 
-                clearError: true 
-              })
-              }}
-           value={${d}.value}
-              right={
-                <TextInput.Icon
-                  onPress={()=>{
-                    set${SECTION_NAME}FormField({
-                      field: "${d}",
-                      value: "", 
-                      clearError: false 
-                    })
-                  }}
-                  style={{ width: 23, height: 23 }}
-                  icon={require("../../Assets/icons/ic_close.png")}
+              set${SECTION_NAME}FormField(${d},text)
+          }}
+          value={${d}.value}
+            right={
+              <TextInput.Icon
+                onPress={()=>{
+                    set${SECTION_NAME}FormField(${d},"")
+                }}
+                style={{ width: 23, height: 23 }}
+                icon={require("../../Assets/icons/ic_close.png")}
                 />
               }
             />
@@ -1218,7 +1219,7 @@ const formRenderView = ({ SECTION_NAME,formFields }) => {
            label="REGISTER"
            isDisabled={!isButtonEnable}
            onPress={async () => {
-             const {status,response} = await dispatch${SECTION_NAME}(add${SECTION_NAME}Action(${section_low}Redux.formData))
+             const status= await dispatch${SECTION_NAME}(add${SECTION_NAME}Action(${section_low}Redux.formData))
              if(status) {
               dispatch${SECTION_NAME}(set${SECTION_NAME}Reset())
              }
@@ -1301,8 +1302,7 @@ const dispatchTempleteForm = ({ SECTION_NAME,formFields }) => {
   
   export function add${SECTION_NAME}Action(obj) {
     return async (dispatch) => {
-      const validation = await validateFormData(obj, dispatch);
-      if (!validation) return null;
+   
       dispatch(enableLoaderAdd${SECTION_NAME}(true));
   
       let result = await serverCall(
