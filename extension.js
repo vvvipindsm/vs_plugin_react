@@ -456,31 +456,21 @@ async function activate(context) {
       useEffect(() => {
         fetch${SECTION_NAME}Data(0);
       }, []);
+      const ${SECTION_NAME}Red = useSelector(state=>state.${SECTION_NAME});
       const LoadMoreRandomData = () => {
-        if (dispatch${SECTION_NAME}.noData) fetch${SECTION_NAME}Data(dispatch${SECTION_NAME}.page + 1);
+        if (${SECTION_NAME}Red.noData) fetch${SECTION_NAME}Data(${SECTION_NAME}Red.page + 1);
       };
       {
-        !dispatch${SECTION_NAME}?.init${SECTION_NAME} && dispatch${SECTION_NAME}?.${SECTION_NAME}Data.length > 0 && (
-          <View style={[{ height: 230 }, styles.bottomView]}>
+        !${SECTION_NAME}Red?.init${SECTION_NAME} && ${SECTION_NAME}Red?.${SECTION_NAME}Data.length > 0 && (
+          <View style={{flex :1}}>
             <FlatList
-              horizontal
-              onScroll={onScroll}
-              data={dispatch${SECTION_NAME}?.${SECTION_NAME}Data}
+              horizontal={false}
+              data={${SECTION_NAME}Red?.${SECTION_NAME}Data}
               onEndReachedThreshold={0.5}
               onEndReached={LoadMoreRandomData}
               renderItem={({ item }, data) => {
                 return (
-                  <ListItem
-                    title={
-                      item.serviceTypeDesc
-                        ? item.serviceTypeDesc
-                        : item.ticketTypeDesc
-                    }
-                    type={item.intxnType}
-                    status={item.currStatusDesc}
-                    ticketNo={item.intxnId}
-                    date={item.createdAt}
-                    address={getAddressFromResponse(item)}
+                     <Text></Text>
                   />
                 );
               }}
@@ -500,7 +490,7 @@ async function activate(context) {
         );
       }
       {
-        dispatch${SECTION_NAME}?.init${SECTION_NAME}Background && <ActivityIndicator />;
+        ${SECTION_NAME}Red?.init${SECTION_NAME}Background && <ActivityIndicator />;
       }
       
       `
