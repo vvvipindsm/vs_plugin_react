@@ -160,7 +160,8 @@ async function activate(context) {
       // add reducer initial contant data
       const addContantValue = addContantValues(actionName);
       //ad reducer file function
-      let ReducerData = parseApiReducerData({ SECTION_NAME: actionName });
+      const actionFirstSmall = firstLetterSmall(actionName)
+      let ReducerData = parseApiReducerData({ SECTION_NAME: actionName ,actionFirstSmall});
 
       const appendIndex = importTempAdded.findIndex((value) =>
         /default:/.test(value)
@@ -197,7 +198,7 @@ async function activate(context) {
         SECTION_NAME: actionName,
       });
       //action adding method
-      let ActionData = parseApiActionData({ SECTION_NAME: actionName.toUpperCase() });
+      let ActionData = parseApiActionData({ SECTION_NAME: actionName.toUpperCase(),SECTION_NAME_NORM:actionName });
 
       actionExisting.splice(0, 0, importTempAddedAction.join("\n"));
       actionExisting.splice(-1, 0, ActionData.join("\n"));
@@ -321,9 +322,16 @@ async function activate(context) {
         curSorLine + 1,
         0,
         `
-      import { get${SECTION_NAME} } from "../../Redux/${SECTION_NAME}Dispatcher";
-      const dispatch${SECTION_NAME}= useDispatch([get${SECTION_NAME}]);
-      let SECTION_NAME = useSelector((state) => state.SECTION_NAME);
+      import { get${SECTION_NAME}Data } from "../../Redux/${SECTION_NAME}Dispatcher";
+      const dispatch${SECTION_NAME}= useDispatch([get${SECTION_NAME}Data]);
+      const ${SECTION_NAME}Red = useSelector((state) => state.${SECTION_NAME});
+      import { SetObject } from "../../Utilities/utils";
+
+      useEFfect(()=>{
+        dispatch${SECTION_NAME}(get${SECTION_NAME}Data)
+      })
+      const getObj = new SetObject(${SECTION_NAME}Red.${SECTION_NAME}Data);
+      console.log(getObj?.getParams('status',''))
       `
       );
       // console.log('>>',currentFilePath)
@@ -444,39 +452,41 @@ async function activate(context) {
 
       //react-page
       const activeCodeArr = activeFileCode.split("\n");
+      const sesstioFistLoweCase = firstLetterSmall(SECTION_NAME);
       activeCodeArr.splice(
         curSorLine + 1,
         0,
         `
+      import {FlatList,ActivityIndicator} from 'react-native';
       import { get${SECTION_NAME} } from "../../Redux/${SECTION_NAME}Dispatcher";
       const dispatch${SECTION_NAME}= useDispatch([${SECTION_NAME}]);
       const fetch${SECTION_NAME}Data = (page) => {
-        dispatch(get${SECTION_NAME}Data(page));
+        dispatch${SECTION_NAME}(get${SECTION_NAME}Data(page));
       };
       useEffect(() => {
         fetch${SECTION_NAME}Data(0);
       }, []);
-      const ${SECTION_NAME}Red = useSelector(state=>state.${SECTION_NAME});
+      const ${sesstioFistLoweCase}Red = useSelector(state=>state.${sesstioFistLoweCase});
       const LoadMoreRandomData = () => {
-        if (${SECTION_NAME}Red.noData) fetch${SECTION_NAME}Data(${SECTION_NAME}Red.page + 1);
+        if (${sesstioFistLoweCase}Red.noData) fetch${SECTION_NAME}Data(${sesstioFistLoweCase}Red.page + 1);
       };
       {
-        !${SECTION_NAME}Red?.init${SECTION_NAME} && ${SECTION_NAME}Red?.${SECTION_NAME}Data.length > 0 && (
+        !${sesstioFistLoweCase}Red?.init${sesstioFistLoweCase} && ${sesstioFistLoweCase}Red?.${sesstioFistLoweCase}Data.length > 0 && (
           <View style={{flex :1}}>
             <FlatList
               horizontal={false}
-              data={${SECTION_NAME}Red?.${SECTION_NAME}Data}
+              data={${sesstioFistLoweCase}Red?.${sesstioFistLoweCase}Data}
               onEndReachedThreshold={0.5}
               onEndReached={LoadMoreRandomData}
               renderItem={({ item }, data) => {
                 return (
-                     <Text></Text>
+                     <Text>adasd</Text>
                   />
                 );
               }}
               showsHorizontalScrollIndicator={false}
               ListFooterComponent={() => {
-                if (noData) {
+                if (${sesstioFistLoweCase}Red?noData) {
                   return null;
                 }
                 return (
@@ -1355,28 +1365,28 @@ const parseApiDispatcherData = ({ SECTION_NAME }) => {
 };
 
 const parseApiDispatcherImporterData = ({ SECTION_NAME }) => {
-  const code = `set${SECTION_NAME}Data, set${SECTION_NAME}Error,
+  const code = `set${SECTION_NAME}, set${SECTION_NAME}Error,
   set${SECTION_NAME}Loader`;
   return code;
 };
 
-const parseApiReducerData = ({ SECTION_NAME }) => {
+const parseApiReducerData = ({ SECTION_NAME ,actionFirstSmall}) => {
   const code = `case ${SECTION_NAME.toUpperCase()}_ERROR:
   return {
       ...state,
       init${SECTION_NAME}: false,
-      ${SECTION_NAME.toLocaleLowerCase()}Loader : false,
+      ${actionFirstSmall}Loader : false,
       is${SECTION_NAME}Error: true,
-      ${SECTION_NAME.toLocaleLowerCase()}Data: action.data,
+      ${actionFirstSmall}Data: action.data,
   }
 
 case ${SECTION_NAME.toUpperCase()}_DATA:
   return {
       ...state,
       init${SECTION_NAME}: false,
-      ${SECTION_NAME.toLocaleLowerCase()}Loader : false,
+      ${actionFirstSmall}Loader : false,
       is${SECTION_NAME}Error: false,
-      ${SECTION_NAME.toLocaleLowerCase()}Data: action.data,
+      ${actionFirstSmall}Data: action.data,
   }`;
   return code.split("\n");
 };
@@ -1385,15 +1395,15 @@ const parseApiReducerImportData = ({ SECTION_NAME }) => {
   const code = `${SECTION_NAME.toUpperCase()}_DATA,${SECTION_NAME.toUpperCase()}_ERROR`;
   return code;
 };
-const parseApiActionData = ({ SECTION_NAME }) => {
-  const code = ` export const set${SECTION_NAME}Data =(data) => {
+const parseApiActionData = ({ SECTION_NAME,SECTION_NAME_NORM }) => {
+  const code = ` export const set${SECTION_NAME_NORM}Data =(data) => {
     return { type: ${SECTION_NAME}_DATA, data }
 }
-export const set${SECTION_NAME}Loader =(data) => {
+export const set${SECTION_NAME_NORM}Loader =(data) => {
   return { type: ${SECTION_NAME}_LOADER, data }
 }
 
-export const set${SECTION_NAME}_ERROR = (data) => {
+export const set${SECTION_NAME_NORM}_ERROR = (data) => {
     return { type: ${SECTION_NAME}_ERROR, data }
 }`;
   return code.split("\n");
@@ -1415,6 +1425,9 @@ const findIndexToAppend = (temp, search) => {
   const t = temp.findIndex((value) => /^search=/.test(value));
   console.log(">>", t != -1, t);
 };
+const firstLetterSmall = (str) =>{
+  return str.charAt(0).toLowerCase() + str.slice(1)
+}
 const addContantValues = (actionName) => {
   const temp = ` is${actionName}Error: false,${actionName}Data: {},${actionName}Loader`;
   return temp;
